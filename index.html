@@ -1,1312 +1,1176 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CIFI Vending Machine Widget</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+    <base href="." />
+    <title>XDC Token Vending Machine</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <style>
-        :root {
-            --primary: #e84142;
-            --secondary: #ff6b6b;
-            --background: #f8f9fa;
-            --text: #2d3436;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
         body {
+            font-family: 'Arial', sans-serif;
+            background: white;
             margin: 0;
-            padding: 10px;
-            height: 100vh;
-            overflow-y: auto;
-            background: var(--background);
-            color: var(--text);
-        }
-        .widget-container {
-            max-width: 100%;
-            margin: 0 auto;
+            padding: 20px;
         }
         .container {
-            height: 100vh;
-            overflow: auto;
-            padding: 10px;
             max-width: 1200px;
             margin: 0 auto;
         }
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.connect-wallet {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-.connect-wallet:hover {
-    background: var(--secondary);
-}
-.vending-machine {
-    background: white;
-    margin: 20px auto;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-.vending-machine-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.token-grid {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px; /* Add space between products */
-}
-.token-item {
-    flex: 1;
-    max-width: 300px;
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-.token-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-.token-item .token-icon {
-    width: 50px;
-    height: 50px;
-    margin: 0 auto 10px;
-    background: var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-.token-price {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--primary);
-    margin: 10px 0;
-}
-.buy-button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: bold;
-    width: 100%;
-    margin-top: 10px;
-}
-.buy-button:hover {
-    background: var(--secondary);
-    transform: translateY(-2px);
-}
-.token-balance {
-    display: flex;
-    justify-content: space-around;
-    background: #e9ecef;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-weight: bold;
-}
-.token-balance #tokenBalance {
-    display: flex;
-    gap: 20px;
-}
-.token-balance #tokenBalance div {
-    padding: 8px 15px;
-    background: white;
-    border-radius: 5px;
-    margin: 0 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.main-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-    margin-top: 20px;
-}
-.news-feed {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.post-form {
-    margin-bottom: 20px;
-}
-.post-type {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-.post-content {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    min-height: 100px;
-}
-.post-button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.messages {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.message-list {
-    margin-bottom: 20px;
-}
-.message {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-.message-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-.wallet-status {
-    color: var(--primary);
-    font-weight: bold;
-}
-.cost-info {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    font-size: 0.9em;
-    color: #666;
-}
-.token-item .buy-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-.error-message {
-    color: var(--primary);
-    padding: 10px;
-    margin: 10px 0;
-    background: #ffe6e6;
-    border-radius: 5px;
-    display: none;
-}
-/* Add this CSS for the modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 10px;
-    position: relative;
-}
-.modal-header {
-    margin-bottom: 20px;
-}
-.modal-header h2 {
-    margin: 0;
-    color: var(--primary);
-}
-.modal-body {
-    margin-bottom: 20px;
-}
-.modal-body input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-.modal-footer {
-    text-align: right;
-}
-.close {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-.close:hover {
-    color: var(--primary);
-}
-</style>
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .connect-btn {
+            background: #2E3192;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .connect-btn:hover {
+            background: #1a1b5c;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        .product-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .buy-btn {
+            background: #000000;
+            color: white;
+            border: 2px solid #40E0D0;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        .buy-btn:hover {
+            background: #1a1a1a;
+            border-color: #30C0B0;
+        }
+        .wallet-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .token-balance {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="vending-machine">
-            <div class="vending-machine-header">
-                <h2>Welcome</h2>
-                <p>Purchase tokens to interact with the social platform</p>
-            </div>
-
-            <nav>
-                <h1>CIFI Vending Machine</h1>
-                <div>
-                    <span class="wallet-status" id="walletStatus">Not Connected</span>
-                    <button class="connect-wallet" id="connectWallet">Connect Wallet</button>
-                </div>
-            </nav>          
-            
+        <div class="header">
+            <h1>XDC Token Vending Machine</h1>
+            <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+        </div>
+        
+        <div class="wallet-info" id="walletInfo">
+            <p>Connected Address: <span id="userAddress"></span></p>
+            <p>Network: <span id="networkInfo"></span></p>
             <div class="token-balance">
-                Your Balance: <div id="tokenBalance">
-                    <div>0 wCIFI</div>
-                    <div>0 wREFI</div>
-                </div>
-            </div>
-
-            <div class="token-grid">
-                <div class="token-item">
-                    <div class="token-icon">wCIFI</div>
-                    <h3>wCIFI Token</h3>
-                    <p id="availableSupply0">0 wCIFI Available</p>
-                    <p class="token-price" id="tokenPrice0">0 wREFI per token</p>
-                    <button class="buy-button" onclick="purchaseTokens(0)">Buy wCIFI</button>
-                </div>
-                
-                <div class="token-item">
-                    <div class="token-icon">wREFI</div>
-                    <h3>wREFI Token</h3>
-                    <p id="availableSupply1">0 wREFI Available</p>
-                    <p class="token-price" id="tokenPrice1">0 wCIFI per token</p>
-                    <button class="buy-button" onclick="purchaseTokens(1)">Buy wREFI</button>
-                </div>
-
-                <div class="token-item">
-                    <div class="token-icon">wREFI</div>
-                    <h3>wREFI Premium Token</h3>
-                    <p id="availableSupply2">0 wREFI Available</p>
-                    <p class="token-price" id="tokenPrice2">5 wCIFI per token</p>
-                    <button class="buy-button" onclick="purchaseTokens(2)">Buy Premium wREFI</button>
-                </div>
+                <p>CIFI Balance: <span id="cifiBalance">0</span></p>
+                <p>REFI Balance: <span id="refiBalance">0</span></p>
             </div>
         </div>
 
-        <div id="purchaseModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="modal-header">
-                    <h2 id="modalProductName">Purchase Tokens</h2>
-                </div>
-                <div class="modal-body">
-                    <p id="modalProductId">Product ID: 0</p>
-                    <input type="number" id="purchaseAmount" placeholder="Enter amount of tokens to purchase">
-                    <p id="totalCost"></p>
-                </div>
-                <div class="modal-footer">
-                    <button class="buy-button" onclick="confirmPurchase()">Confirm Purchase</button>
-                </div>
+        <div class="products-grid">
+            <div class="product-card" id="productCard0">
+                <h2 class="product-name">Product 1</h2>
+                <p class="product-price">Price: </p>
+                <button class="buy-btn" onclick="buyToken(0)">Buy</button>
+            </div>
+            
+            <div class="product-card" id="productCard1">
+                <h2 class="product-name">Product 2</h2>
+                <p class="product-price">Price: </p>
+                <button class="buy-btn" onclick="buyToken(1)">Buy</button>
             </div>
         </div>
+    </div>
 
-        <iframe 
-            src="https://your-domain.com/vending-machine.html" 
-            style="width: 100%; height: 800px; border: none; overflow: hidden;"
-            id="vendingMachineFrame"
-            allow="web3.js; ethereum"
-        ></iframe>
-
-        <script>
-        window.addEventListener('message', function(event) {
-            // Validate origin for security
-            const allowedOrigins = ['https://your-domain.com']; // Update with actual allowed domains
-            if (!allowedOrigins.includes(event.origin)) {
-                return;
-            }
-
-            switch(event.data.type) {
-                case 'connect':
-                    connectWallet();
-                    break;
-                case 'purchase':
-                    purchaseTokens(event.data.productId);
-                    break;
-                case 'getBalance':
-                    loadBalances().then(balances => {
-                        window.parent.postMessage({
-                            type: 'balances',
-                            data: balances
-                        }, event.origin);
-                    });
-                    break;
-            }
-        });
-
-        const VENDING_MACHINE_ADDRESS = '0x4dC2eaFAa2Be851f308E6b3017d7754Ecb8c57B0'; // Need the actual vending machine contract address
-        const VENDING_MACHINE_ABI = [
-            {
-                "inputs": [],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    }
-                ],
-                "name": "OwnableInvalidOwner",
-                "type": "error"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "account",
-                        "type": "address"
-                    }
-                ],
-                "name": "OwnableUnauthorizedAccount",
-                "type": "error"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "token",
-                        "type": "address"
-                    }
-                ],
-                "name": "SafeERC20FailedOperation",
-                "type": "error"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "previousOwner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "newOwner",
-                        "type": "address"
-                    }
-                ],
-                "name": "OwnershipTransferred",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "string",
-                        "name": "name",
-                        "type": "string"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "productToken",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "paymentToken",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "ProductAdded",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "buyer",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "paymentAmount",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "ProductPurchased",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "bool",
-                        "name": "isActive",
-                        "type": "bool"
-                    }
-                ],
-                "name": "ProductStatusChanged",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "newPrice",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "newSupply",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "ProductUpdated",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "token",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "TokensWithdrawn",
-                "type": "event"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "string",
-                        "name": "name",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "productToken",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "paymentToken",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "initialSupply",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "addProduct",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "getProduct",
-                "outputs": [
-                    {
-                        "components": [
-                            {
-                                "internalType": "string",
-                                "name": "name",
-                                "type": "string"
-                            },
-                            {
-                                "internalType": "address",
-                                "name": "productToken",
-                                "type": "address"
-                            },
-                            {
-                                "internalType": "address",
-                                "name": "paymentToken",
-                                "type": "address"
-                            },
-                            {
-                                "internalType": "uint256",
-                                "name": "price",
-                                "type": "uint256"
-                            },
-                            {
-                                "internalType": "uint256",
-                                "name": "availableSupply",
-                                "type": "uint256"
-                            },
-                            {
-                                "internalType": "bool",
-                                "name": "isActive",
-                                "type": "bool"
-                            }
-                        ],
-                        "internalType": "struct TokenVendingMachine.Product",
-                        "name": "",
-                        "type": "tuple"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "owner",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "productCount",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "products",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "name",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "productToken",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "paymentToken",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "availableSupply",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "isActive",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "purchaseProduct",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "renounceOwnership",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "isActive",
-                        "type": "bool"
-                    }
-                ],
-                "name": "setProductStatus",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "newOwner",
-                        "type": "address"
-                    }
-                ],
-                "name": "transferOwnership",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "productId",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "newPrice",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "additionalSupply",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "updateProduct",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "token",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "withdrawTokens",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
-
-        const TOKEN_ABI = [
-            {
-                "inputs": [],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "spender",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "value",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "Approval",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "from",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "value",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "Transfer",
-                "type": "event"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "name": "allowance",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "spender",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "value",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "approve",
-                "outputs": [
-                    {
-                        "internalType": "bool",
-                        "name": "success",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "name": "balanceOf",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [
-                    {
-                        "internalType": "uint8",
-                        "name": "",
-                        "type": "uint8"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "name",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "symbol",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "value",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "transfer",
-                "outputs": [
-                    {
-                        "internalType": "bool",
-                        "name": "success",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "from",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "value",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "transferFrom",
-                "outputs": [
-                    {
-                        "internalType": "bool",
-                        "name": "success",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
-        const WREFI_ADDRESS = '0x57f086481F362E1E6051544861A4b1724C9fB99F';
-        const WCIFI_ADDRESS = '0x74b910fcf01C7153b80E3940042BB48518f37257';
-
+    <script>
         let web3;
         let userAccount;
         let vendingMachineContract;
-        let wREFIContract;
-        let wCIFIContract;
+        let products = [];
 
-        let purchaseModal = document.getElementById('purchaseModal');
-        let closeBtn = document.getElementsByClassName('close')[0];
-        let currentPrice = 0;
+        const CIFI_ADDRESS = '0x3b0D21831Fc5cDDd0a4CFD63Fb306fF5162189B8';
+        const REFI_ADDRESS = '0x0C72c24e9d70A95aF37cd24DB4Ade00FA6F8870C';
+
+        const VENDING_MACHINE_ADDRESS = '0x79f4D7574Bd3EA409fb9d28514A66e1C3792B1Dd'; // Replace with your actual contract address
+
+        const TOKEN_ABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
+
+        const TOKEN_VENDING_MACHINE_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "productToken",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "paymentToken",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "initialSupply",
+				"type": "uint256"
+			}
+		],
+		"name": "addProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "OwnableInvalidOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			}
+		],
+		"name": "SafeERC20FailedOperation",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "pause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Paused",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "productToken",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "paymentToken",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "paymentAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "transactionId",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductPurchased",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductStatusChanged",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newPrice",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newSupply",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductUpdated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "purchaseProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensWithdrawn",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "unpause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Unpaused",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "additionalSupply",
+				"type": "uint256"
+			}
+		],
+		"name": "updateProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			}
+		],
+		"name": "getBuyerTransactions",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "buyer",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "paymentAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct TokenVendingMachine.Transaction[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			}
+		],
+		"name": "getProductRevenue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "totalSold",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalRevenue",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTransactionCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "lastPurchaseBlock",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "lastWithdrawalTime",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_WITHDRAWAL_PERCENTAGE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "paused",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "productCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "products",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "productToken",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "paymentToken",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "availableSupply",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalSold",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalRevenue",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "PURCHASE_COOLDOWN",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "WITHDRAWAL_COOLDOWN",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+        async function getTokenDetails(tokenAddress) {
+            const tokenContract = new web3.eth.Contract(TOKEN_ABI, tokenAddress);
+            try {
+                const symbol = await tokenContract.methods.symbol().call();
+                const decimals = await tokenContract.methods.decimals().call();
+                return { symbol, decimals: parseInt(decimals) };
+            } catch (error) {
+                console.error('Error getting token details:', error);
+                return { symbol: '', decimals: 18 };
+            }
+        }
+
+        async function loadProducts() {
+            const productCount = await vendingMachineContract.methods.productCount().call();
+            for (let i = 0; i < productCount; i++) {
+                const product = await vendingMachineContract.methods.products(i).call();
+                const paymentTokenDetails = await getTokenDetails(product.paymentToken);
+                product.paymentTokenSymbol = paymentTokenDetails.symbol;
+                product.paymentTokenDecimals = paymentTokenDetails.decimals;
+
+                const productTokenDetails = await getTokenDetails(product.productToken);
+                product.productTokenSymbol = productTokenDetails.symbol;
+                product.productTokenDecimals = productTokenDetails.decimals;
+
+                products.push(product);
+            }
+            updateProductCards();
+        }
+
+        function updateProductCards() {
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                const productCard = document.getElementById(`productCard${i}`);
+                if (productCard) {
+                    productCard.querySelector('.product-name').textContent = product.name;
+                    const priceInPaymentToken = web3.utils.fromWei(product.price, 'ether');
+                    productCard.querySelector('.product-price').textContent = `Price: ${priceInPaymentToken} ${product.paymentTokenSymbol}`;
+                    productCard.querySelector('.buy-btn').onclick = function() { buyToken(i); };
+                }
+            }
+        }
 
         async function connectWallet() {
-            if (typeof window.ethereum !== 'undefined') {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask to use this dApp!');
+                return;
+            }
+
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAccount = accounts[0];
+                
                 try {
-                    // Request account access in iframe context
-                    await window.ethereum.request({ 
-                        method: 'eth_requestAccounts',
-                        params: [{ eth_accounts: {} }]
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x33' }],
                     });
-                    
-                    web3 = new Web3(window.ethereum);
-                    const accounts = await web3.eth.getAccounts();
-                    userAccount = accounts[0];
-
-                    // Notify parent window of connection
-                    window.parent.postMessage({
-                        type: 'walletConnected',
-                        account: userAccount
-                    }, '*');
-
-                    // Initialize contracts and load data
-                    initializeContracts();
-                    await loadBalances();
-                    await loadProductDetails();
-
-                } catch (error) {
-                    console.error('Wallet connection error:', error);
-                    window.parent.postMessage({
-                        type: 'error',
-                        message: error.message
-                    }, '*');
-                }
-            } else {
-                window.parent.postMessage({
-                    type: 'error',
-                    message: 'MetaMask not installed'
-                }, '*');
-            }
-        }
-
-        function initializeContracts() {
-            vendingMachineContract = new web3.eth.Contract(VENDING_MACHINE_ABI, VENDING_MACHINE_ADDRESS);
-            wREFIContract = new web3.eth.Contract(TOKEN_ABI, WREFI_ADDRESS);
-            wCIFIContract = new web3.eth.Contract(TOKEN_ABI, WCIFI_ADDRESS);
-        }
-
-        // Add new function to load balances
-        async function loadBalances() {
-            try {
-                const wREFIBalance = await wREFIContract.methods.balanceOf(userAccount).call();
-                const wCIFIBalance = await wCIFIContract.methods.balanceOf(userAccount).call();
-                
-                document.getElementById('tokenBalance').innerHTML = `
-                    <div>${web3.utils.fromWei(wCIFIBalance, 'ether')} wCIFI</div>
-                    <div>${web3.utils.fromWei(wREFIBalance, 'ether')} wREFI</div>
-                `;
-            } catch (error) {
-                console.error('Error loading balances:', error);
-            }
-        }
-
-        async function loadProductDetails() {
-            try {
-                // Load Product 0 (wCIFI)
-                const product0 = await vendingMachineContract.methods.getProduct(0).call();
-                document.getElementById('availableSupply0').textContent = 
-                    web3.utils.fromWei(product0.availableSupply, 'ether') + ' wCIFI Available';
-                document.getElementById('tokenPrice0').textContent = 
-                    web3.utils.fromWei(product0.price, 'ether') + ' wREFI per token';
-
-                // Load Product 1 (wREFI)
-                const product1 = await vendingMachineContract.methods.getProduct(1).call();
-                document.getElementById('availableSupply1').textContent = 
-                    web3.utils.fromWei(product1.availableSupply, 'ether') + ' wREFI Available';
-                document.getElementById('tokenPrice1').textContent = 
-                    web3.utils.fromWei(product1.price, 'ether') + ' wCIFI per token';
-
-                // Load Product 2 (Premium wREFI)
-                const product2 = await vendingMachineContract.methods.getProduct(2).call();
-                document.getElementById('availableSupply2').textContent = 
-                    web3.utils.fromWei(product2.availableSupply, 'ether') + ' wREFI Available';
-                document.getElementById('tokenPrice2').textContent = 
-                    web3.utils.fromWei(product2.price, 'ether') + ' wCIFI per token';
-            } catch (error) {
-                console.error('Error loading product details:', error);
-            }
-        }
-
-        // Add real-time calculation for purchase amount
-        function updatePurchaseModal(productId) {
-            const purchaseAmount = document.getElementById('purchaseAmount');
-            const totalCostElement = document.getElementById('totalCost');
-            
-            // Add input event listener for real-time updates
-            purchaseAmount.addEventListener('input', function() {
-                const amount = this.value;
-                if (amount && !isNaN(amount) && amount > 0) {
-                    let total;
-                    let paymentToken;
-                    
-                    switch(productId) {
-                        case 0:
-                            total = amount * currentPrice;
-                            paymentToken = 'wREFI';
-                            break;
-                        case 1:
-                            total = amount * currentPrice;
-                            paymentToken = 'wCIFI';
-                            break;
-                        case 2:
-                            total = amount * 5; // Fixed price of 5 wCIFI per wREFI
-                            paymentToken = 'wCIFI';
-                            break;
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x33',
+                                    chainName: 'XDC-Apothem',
+                                    nativeCurrency: {
+                                        name: 'TXDC',
+                                        symbol: 'TXDC',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://erpc.apothem.network'],
+                                    blockExplorerUrls: ['https://explorer.apothem.network']
+                                }],
+                            });
+                        } catch (addError) {
+                            console.error('Error adding network:', addError);
+                            alert('Failed to add Apothem network to MetaMask');
+                            return;
+                        }
+                    } else {
+                        console.error('Error switching network:', switchError);
+                        alert('Failed to switch to Apothem network');
+                        return;
                     }
-                    
-                    totalCostElement.textContent = `Total cost: ${total} ${paymentToken}`;
-                } else {
-                    totalCostElement.textContent = 'Enter amount to see total cost';
-                }
-            });
-        }
-
-        // Update the purchaseTokens function to include the real-time calculator
-        async function purchaseTokens(productId) {
-            try {
-                if (!userAccount) {
-                    alert('Please connect your wallet first!');
-                    return;
-                }
-                
-                if (!vendingMachineContract) {
-                    alert('Vending machine contract not initialized. Please connect wallet first.');
-                    return;
-                }
-                
-                // Show the modal
-                const purchaseModal = document.getElementById('purchaseModal');
-                purchaseModal.style.display = "block";
-                
-                // Get current price and update modal content
-                const product = await vendingMachineContract.methods.getProduct(productId).call();
-                currentPrice = web3.utils.fromWei(product.price, 'ether');
-                
-                // Update modal displays with product specific information
-                document.getElementById('modalProductId').textContent = `Product ID: ${productId}`;
-                
-                let productName;
-                switch(productId) {
-                    case 0:
-                        productName = 'wCIFI';
-                        break;
-                    case 1:
-                        productName = 'wREFI';
-                        break;
-                    case 2:
-                        productName = 'Premium wREFI';
-                        break;
-                }
-                
-                document.getElementById('modalProductName').textContent = `Purchase ${productName} Tokens`;
-                document.getElementById('totalCost').textContent = 'Enter amount to see total cost';
-                document.getElementById('purchaseAmount').value = '';
-                
-                // Store the current product ID for use in confirmation
-                purchaseModal.dataset.productId = productId;
-                
-                // Initialize real-time calculator
-                updatePurchaseModal(productId);
-            } catch (error) {
-                console.error('Error in purchaseTokens:', error);
-                alert('An error occurred while initializing the purchase. Please try again.');
-            }
-        }
-
-        async function confirmPurchase() {
-            try {
-                const amount = document.getElementById('purchaseAmount').value;
-                const productId = parseInt(purchaseModal.dataset.productId);
-                
-                // Validate input
-                if (!amount || isNaN(amount) || amount <= 0) {
-                    throw new Error('Invalid amount');
                 }
 
-                const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
-                const product = await vendingMachineContract.methods.getProduct(productId).call();
-                const paymentAmount = web3.utils.toBN(amountInWei).mul(web3.utils.toBN(product.price))
-                    .div(web3.utils.toBN(web3.utils.toWei('1', 'ether')));
+                web3 = new Web3(window.ethereum);
+                vendingMachineContract = new web3.eth.Contract(TOKEN_VENDING_MACHINE_ABI, VENDING_MACHINE_ADDRESS);
 
-                // Handle approvals
-                if (productId === 0) {
-                    await wREFIContract.methods.approve(VENDING_MACHINE_ADDRESS, paymentAmount)
-                        .send({ from: userAccount });
-                } else {
-                    await wCIFIContract.methods.approve(VENDING_MACHINE_ADDRESS, paymentAmount)
-                        .send({ from: userAccount });
-                }
+                document.getElementById('userAddress').textContent = userAccount;
+                document.getElementById('networkInfo').textContent = 'XDC-Apothem';
+                document.getElementById('walletInfo').style.display = 'block';
 
-                // Execute purchase
-                await vendingMachineContract.methods.purchaseProduct(productId, amountInWei)
-                    .send({ from: userAccount });
+                await updateTokenBalances();
+                await loadProducts();
 
-                // Notify parent window
-                window.parent.postMessage({
-                    type: 'purchaseComplete',
-                    productId: productId,
-                    amount: amount
-                }, '*');
-
-                // Update UI
-                purchaseModal.style.display = "none";
-                await loadBalances();
-                await loadProductDetails();
-
-            } catch (error) {
-                console.error('Purchase error:', error);
-                window.parent.postMessage({
-                    type: 'error',
-                    message: error.message
-                }, '*');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click handlers
-            document.getElementById('connectWallet').addEventListener('click', connectWallet);
-            
-            // Setup modal close handlers
-            const purchaseModal = document.getElementById('purchaseModal');
-            const closeBtn = document.querySelector('.close');
-            
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    purchaseModal.style.display = "none";
+                window.ethereum.on('accountsChanged', async function (accounts) {
+                    userAccount = accounts[0];
+                    document.getElementById('userAddress').textContent = userAccount;
+                    await updateTokenBalances();
                 });
+
+                window.ethereum.on('chainChanged', function (chainId) {
+                    window.location.reload();
+                });
+
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Failed to connect wallet');
             }
-            
-            window.addEventListener('click', function(event) {
-                if (event.target === purchaseModal) {
-                    purchaseModal.style.display = "none";
+        }
+
+        async function updateTokenBalances() {
+            if (!userAccount || !web3) return;
+
+            const cifiBalance = await getTokenBalance(CIFI_ADDRESS, userAccount);
+            const refiBalance = await getTokenBalance(REFI_ADDRESS, userAccount);
+
+            document.getElementById('cifiBalance').textContent = cifiBalance.toFixed(2);
+            document.getElementById('refiBalance').textContent = refiBalance.toFixed(2);
+        }
+
+        async function getTokenBalance(tokenAddress, userAddress) {
+            const contract = new web3.eth.Contract(TOKEN_ABI, tokenAddress);
+            try {
+                const balance = await contract.methods.balanceOf(userAddress).call();
+                const decimals = await contract.methods.decimals().call();
+                return balance / Math.pow(10, decimals);
+            } catch (error) {
+                console.error('Error getting token balance:', error);
+                return 0;
+            }
+        }
+
+        async function buyToken(productId) {
+            if (!userAccount) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            const product = products[productId];
+
+            if (!product || !product.isActive) {
+                alert('Product not available');
+                return;
+            }
+
+            try {
+                const amountInput = prompt(`Enter amount of ${product.productTokenSymbol} to buy:`);
+                if (!amountInput) return;
+
+                const amount = web3.utils.toBN(amountInput).mul(web3.utils.toBN(10).pow(web3.utils.toBN(product.productTokenDecimals)));
+
+                // Calculate payment amount
+                const paymentAmount = amount.mul(web3.utils.toBN(product.price)).div(web3.utils.toBN('1000000000000000000'));
+
+                // Check payment token balance
+                const paymentTokenContract = new web3.eth.Contract(TOKEN_ABI, product.paymentToken);
+                const balance = await paymentTokenContract.methods.balanceOf(userAccount).call();
+                if (web3.utils.toBN(balance).lt(paymentAmount)) {
+                    alert(`Insufficient ${product.paymentTokenSymbol} balance.`);
+                    return;
                 }
-            });
-        });
-        </script>
-    </div>
+
+                // Check allowance
+                const allowance = await paymentTokenContract.methods.allowance(userAccount, VENDING_MACHINE_ADDRESS).call();
+                if (web3.utils.toBN(allowance).lt(paymentAmount)) {
+                    alert(`Approving ${paymentAmount.toString()} ${product.paymentTokenSymbol} for spending...`);
+                    const approveTx = await paymentTokenContract.methods.approve(VENDING_MACHINE_ADDRESS, paymentAmount.toString()).send({ from: userAccount });
+                    console.log('Approval transaction:', approveTx);
+                }
+
+                // Now call purchaseProduct
+                const tx = await vendingMachineContract.methods.purchaseProduct(productId, amount.toString()).send({ from: userAccount });
+
+                alert('Purchase successful!');
+                await updateTokenBalances();
+            } catch (error) {
+                console.error('Error purchasing token:', error);
+                alert('Failed to purchase token');
+            }
+        }
+    </script>
 </body>
 </html>
